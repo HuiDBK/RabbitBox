@@ -3,7 +3,6 @@
 # @Author: Hui
 # @Desc: { 游戏入口模块 }
 # @Date: 2023/09/13 12:20
-import os
 import sys
 import random
 
@@ -13,45 +12,21 @@ from src.game_map import (
     GAME_MAP, WALL_FLAG, PLAYER_FLAG, BOX_FLAG, DEST_FLAG, BG_FLAG,
     EMPTY_FLAG, PLAYER_DEST_FLAG, BOX_DEST_FLAG
 )
-
-# 定义颜色 rgb
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
+from src import game_setting
+from src.game_setting import MoveDirection
 
 
 class RabbitBox(object):
-    GRID_SIZE = 64  # 单个方块大小
-    GAME_TITLE = "🐰兔子吃着月饼🥮上月球🌕"
+    GRID_SIZE = game_setting.GRID_SIZE
+    GAME_TITLE = game_setting.GAME_TITLE
 
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    WALLS = [
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/lantern.png"))
-    ]
-
-    PLAYERS = [
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/rabbit.png"))
-    ]
-
-    BOXS = [
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/moon_cake.png"))
-    ]
-
-    TERMINAL_BOXS = [
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/moon_02.png"))
-    ]
-
-    FINISHED_BOXS = [
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/moon.png")),
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/moon_01.png")),
-    ]
-
-    BG_BOXS = [
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/fireworks.png")),
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/fireworks_02.png")),
-        pygame.image.load(os.path.join(BASE_DIR, "res/img/star.png")),
-    ]
+    WALLS = game_setting.WALLS
+    PLAYERS = game_setting.PLAYERS
+    BOXS = game_setting.BOXS
+    TERMINAL_BOXS = game_setting.TERMINAL_BOXS
+    FINISHED_BOXS = game_setting.FINISHED_BOXS
+    BG_BOXS = game_setting.BG_BOXS
+    BG_SCREENS = game_setting.BG_SCREENS
 
     def __init__(self, game_level: int = 1, game_fps=60):
         """
@@ -73,10 +48,10 @@ class RabbitBox(object):
         self.terminal_box: Surface = None
         self.finished_box: Surface = None
         self.bg_box: Surface = None
-
-        self.setup_game_screen()
+        self.bg_screen: Surface = None
 
         self.random_game_material()
+        self.setup_game_screen()
 
     def random_game_material(self):
         """随机游戏素材"""
@@ -86,6 +61,7 @@ class RabbitBox(object):
         self.terminal_box = random.choice(self.TERMINAL_BOXS)
         self.finished_box = random.choice(self.FINISHED_BOXS)
         self.bg_box = random.choice(self.BG_BOXS)
+        self.bg_screen = random.choice(self.BG_SCREENS)
 
     def _init_game(self):
         pygame.init()
@@ -98,7 +74,12 @@ class RabbitBox(object):
         row_num = len(rows)
         col_num = len(rows[0])
 
-        self.game_screen = pygame.display.set_mode(size=[self.GRID_SIZE * row_num, self.GRID_SIZE * col_num])
+        width = self.GRID_SIZE * row_num
+        height = self.GRID_SIZE * col_num
+        self.game_screen = pygame.display.set_mode(size=[width, height])
+
+        # 按比例缩放背景图
+        self.bg_screen = pygame.transform.scale(self.bg_screen, (width, height))
 
     def draw_map(self):
         """遍历地图数据绘制"""
@@ -132,9 +113,9 @@ class RabbitBox(object):
                     # 画月饼的目的地（月球）
                     self.game_screen.blit(source=self.terminal_box, dest=(offset_x, offset_y))
 
-                elif num_flag == BG_FLAG:
-                    # 画空（背景）
-                    self.game_screen.blit(source=self.bg_box, dest=(offset_x, offset_y))
+                # elif num_flag == BG_FLAG:
+                #     # 画空（背景）
+                #     self.game_screen.blit(source=self.bg_box, dest=(offset_x, offset_y))
 
         return self.player_pos
 
@@ -143,7 +124,7 @@ class RabbitBox(object):
         i, j = self.player_pos
         map_list = GAME_MAP[self.game_level]
         if map_list[i][j] == PLAYER_DEST_FLAG:
-            # 当前位置是人和目的地重合处理
+            # 当前位置是角色和目的地重合处理
             map_list[i][j] = DEST_FLAG  # 把原来角色位置改成目的地
         else:
             map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
@@ -164,7 +145,7 @@ class RabbitBox(object):
             # 且箱子的上边只能是空白或者目的地才可向上
             map_list[i - 1][j] = PLAYER_FLAG  # 角色向上移动改变角色位置
 
-            # 人和目的地重合判断处理
+            # 角色和目的地重合判断处理
             self._handle_player_dest()
 
             map_list[i - 2][j] = BOX_FLAG  # 把箱子向上移改变位置
@@ -271,6 +252,77 @@ class RabbitBox(object):
 
             self._handle_player_dest()
 
+    def _player_move_event_handle(self, direction: MoveDirection):
+        """
+        玩家上下左右移动事件处理
+        Args:
+            direction: 移动的方向
+
+        """
+
+        # 记录上下左右待判断的位置
+        # i,j 玩家原来位置 上下 m，k  左右 n，v
+        i, j = self.player_pos
+        m, n = self.player_pos
+        k, v = self.player_pos
+        map_list = GAME_MAP[self.game_level]
+
+        # 根据不同的移动方向确定判定条件
+        if direction == MoveDirection.UP:  # 向上 (i - 1, j)、(i - 2, j)
+            m = i - 1
+            k = i - 2
+        elif direction == MoveDirection.DOWN:  # 向下 (i + 1, j)、(i + 2, j)
+            m = i + 1
+            k = i + 2
+        elif direction == MoveDirection.LEFT:  # 向左 (i, j - 1)、(i, j - 2)
+            n = j - 1
+            v = j - 2
+        elif direction == MoveDirection.RIGHT:  # 向右 (i, j + 1)、(i, j + 2)
+            n = j + 1
+            v = j + 2
+
+        def handle_player_dest_coincide():
+            """
+            角色和目的地重合判断处理
+            """
+            if map_list[i][j] == PLAYER_DEST_FLAG:
+                map_list[i][j] = DEST_FLAG  # 是，把原来角色位置改成目的地
+            else:
+                map_list[i][j] = EMPTY_FLAG  # 不是，把原来角色位置改成空白
+
+        # 玩家(上下左右)边是箱子或者箱子和目的地重合
+        # 且箱子的(上下左右)边只能是空白或者目的地才可向上
+        if map_list[m][n] in [BOX_FLAG, BOX_DEST_FLAG] and \
+                map_list[k][v] in [EMPTY_FLAG, DEST_FLAG]:
+
+            if map_list[m][n] == BOX_DEST_FLAG:  # 如果移动的位置是箱子与目的地的重合
+                map_list[m][n] = PLAYER_DEST_FLAG  # 让角色和目的地重合
+            else:
+                map_list[m][n] = PLAYER_FLAG  # 角色向上移动改变角色位置
+
+            # 判断当前位置是否是角色和目的地重合
+            handle_player_dest_coincide()
+
+            # 判断箱子是否与目的地重合
+            if map_list[k][v] == DEST_FLAG:
+                map_list[k][v] = BOX_DEST_FLAG  # 标记箱子和目的地重合
+            else:
+                map_list[k][v] = BOX_FLAG  # 把箱子向上移改变位置
+
+        elif map_list[m][n] == EMPTY_FLAG:  # 判断(上下左右)边是否空白
+
+            map_list[m][n] = PLAYER_FLAG  # 角色向上移动改变角色位置
+
+            # 判断当前位置是否是角色和目的地重合
+            handle_player_dest_coincide()
+
+        elif map_list[m][n] == DEST_FLAG:  # 判断(上下左右)边是否是目的地
+
+            map_list[m][n] = PLAYER_DEST_FLAG  # 让角色和目的地重合
+
+            # 判断当前位置是否是角色和目的地重合
+            handle_player_dest_coincide()
+
     def _event_handle(self):
         """事件处理"""
         for event in pygame.event.get():
@@ -280,19 +332,23 @@ class RabbitBox(object):
             key_pressed = pygame.key.get_pressed()
             if key_pressed[K_a] or key_pressed[K_LEFT]:
                 # 玩家向左移动
-                self.move_lef()
+                self._player_move_event_handle(direction=MoveDirection.LEFT)
+                # self.move_lef()
 
             elif key_pressed[K_d] or key_pressed[K_RIGHT]:
                 # 玩家向右移动
-                self.move_right()
+                self._player_move_event_handle(direction=MoveDirection.RIGHT)
+                # self.move_right()
 
             elif key_pressed[K_w] or key_pressed[K_UP]:
                 # 玩家向上移动
-                self.move_up()
+                self._player_move_event_handle(direction=MoveDirection.UP)
+                # self.move_up()
 
             elif key_pressed[K_s] or key_pressed[K_DOWN]:
                 # 玩家上下移动
-                self.move_down()
+                self._player_move_event_handle(direction=MoveDirection.DOWN)
+                # self.move_down()
 
     def run_game(self):
 
@@ -302,7 +358,7 @@ class RabbitBox(object):
             pygame.time.Clock().tick(self.game_fps)
 
             # 绘制地图
-            self.game_screen.fill(BLACK)
+            self.game_screen.blit(source=self.bg_screen, dest=(0, 0))
             self.draw_map()
 
             # 事件处理
@@ -312,7 +368,7 @@ class RabbitBox(object):
 
 
 def main():
-    RabbitBox(2).run_game()
+    RabbitBox().run_game()
 
 
 if __name__ == '__main__':
