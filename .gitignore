@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+box.py
+.idea
 # Distribution / packaging
 .Python
 build/
