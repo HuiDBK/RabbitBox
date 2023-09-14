@@ -350,6 +350,25 @@ class RabbitBox(object):
                 self._player_move_event_handle(direction=MoveDirection.DOWN)
                 # self.move_down()
 
+    def _handle_game_finish(self):
+        """
+        游戏过关判断处理
+        """
+        exist_dest = False  # 标明是否存在目的地
+        map_list = GAME_MAP[self.game_level]
+        for row in map_list:
+            if DEST_FLAG in row or PLAYER_DEST_FLAG in row:
+                exist_dest = True
+
+        # 不存在目的地游戏通关
+        if not exist_dest:
+            print('game pass %s' % self.game_level)
+            self.game_level = self.game_level + 1
+
+            if self.game_level > len(GAME_MAP):
+                self.game_level = 1
+                print("全部游戏关卡已完成")
+
     def run_game(self):
 
         # 主循环事件监听与渲染
@@ -363,6 +382,9 @@ class RabbitBox(object):
 
             # 事件处理
             self._event_handle()
+
+            # 游戏是否结束处理
+            self._handle_game_finish()
 
             pygame.display.flip()
 
