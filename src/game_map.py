@@ -12,6 +12,7 @@ PLAYER_FLAG = 3  # 表示兔子
 DEST_FLAG = 4  # 表示目的地 (月亮)
 FINISH_BOX_FLAG = 5  # 表示已完成的箱子
 PLAYER_DEST_FLAG = 6  # 表示角色与目的地重合
+BOX_DEST_FLAG = 7  # 表示箱子与目的地重合
 BG_FLAG = 9  # 表示墙外面 其他
 
 # 游戏地图 level => 二维列表地图

@@ -9,7 +9,10 @@ import random
 
 import pygame
 from pygame import Surface, K_a, K_LEFT, K_d, K_RIGHT, K_w, K_UP, K_s, K_DOWN
-from src.game_map import GAME_MAP, WALL_FLAG, PLAYER_FLAG, BOX_FLAG, DEST_FLAG, BG_FLAG, EMPTY_FLAG, PLAYER_DEST_FLAG
+from src.game_map import (
+    GAME_MAP, WALL_FLAG, PLAYER_FLAG, BOX_FLAG, DEST_FLAG, BG_FLAG,
+    EMPTY_FLAG, PLAYER_DEST_FLAG, BOX_DEST_FLAG
+)
 
 # 定义颜色 rgb
 BLACK = (0, 0, 0)
@@ -116,12 +119,12 @@ class RabbitBox(object):
                     # 画墙 （灯笼）
                     self.game_screen.blit(source=self.wall, dest=(offset_x, offset_y))
 
-                elif num_flag == PLAYER_FLAG:
+                elif num_flag in [PLAYER_FLAG, PLAYER_DEST_FLAG]:
                     # 画角色（兔子）
                     self.game_screen.blit(source=self.player, dest=(offset_x, offset_y))
                     self.player_pos = (i, j)  # 标识兔子坐标
 
-                elif num_flag == BOX_FLAG:
+                elif num_flag in [BOX_FLAG, BOX_DEST_FLAG]:
                     # 画箱子（月饼）
                     self.game_screen.blit(source=self.box, dest=(offset_x, offset_y))
 
@@ -135,6 +138,16 @@ class RabbitBox(object):
 
         return self.player_pos
 
+    def _handle_player_dest(self):
+        """角色和目的地重合处理"""
+        i, j = self.player_pos
+        map_list = GAME_MAP[self.game_level]
+        if map_list[i][j] == PLAYER_DEST_FLAG:
+            # 当前位置是人和目的地重合处理
+            map_list[i][j] = DEST_FLAG  # 把原来角色位置改成目的地
+        else:
+            map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+
     def move_up(self):
         """
         玩家向上移动处理
@@ -144,14 +157,6 @@ class RabbitBox(object):
         i, j = self.player_pos
         map_list = GAME_MAP[self.game_level]
 
-        def handle_player_dest():
-            """人和目的地重合处理"""
-            if map_list[i][j] == PLAYER_DEST_FLAG:
-                # 当前位置是人和目的地重合处理
-                map_list[i][j] = DEST_FLAG  # 把原来角色位置改成目的地
-            else:
-                map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
-
         if map_list[i - 1][j] == BOX_FLAG and \
                 (map_list[i - 2][j] == EMPTY_FLAG or map_list[i - 2][j] == DEST_FLAG):
             print('up box')
@@ -160,7 +165,7 @@ class RabbitBox(object):
             map_list[i - 1][j] = PLAYER_FLAG  # 角色向上移动改变角色位置
 
             # 人和目的地重合判断处理
-            handle_player_dest()
+            self._handle_player_dest()
 
             map_list[i - 2][j] = BOX_FLAG  # 把箱子向上移改变位置
 
@@ -169,14 +174,14 @@ class RabbitBox(object):
             print('up empty')
             map_list[i - 1][j] = PLAYER_FLAG  # 角色向上移动改变角色位置
 
-            handle_player_dest()
+            self._handle_player_dest()
 
         elif map_list[i - 1][j] == DEST_FLAG:
             # 玩家上边是目的地
             print('up destination')
             map_list[i - 1][j] = PLAYER_DEST_FLAG  # 让角色和目的地重合
 
-            handle_player_dest()
+            self._handle_player_dest()
 
     def move_down(self):
         """
@@ -191,19 +196,21 @@ class RabbitBox(object):
         if map_list[i + 1][j] == BOX_FLAG and (map_list[i + 2][j] == EMPTY_FLAG or map_list[i + 2][j] == DEST_FLAG):
             print('down box')
             map_list[i + 1][j] = PLAYER_FLAG  # 角色向下移动改变角色位置
-            map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+            self._handle_player_dest()
             map_list[i + 2][j] = BOX_FLAG  # 把箱子向下移改变位置
 
         # 玩家下边(i + 1)是空白
         elif map_list[i + 1][j] == EMPTY_FLAG:
             print('down empty')
-            # 判断当前位置是否是角色和目的地重合
-            if map_list[i][j] == PLAYER_DEST_FLAG:
-                map_list[i + 1][j] = PLAYER_FLAG  # 角色向下移动改变角色位置
-                map_list[i][j] = DEST_FLAG  # 把原来角色位置改成目的地
-            else:
-                map_list[i + 1][j] = PLAYER_FLAG  # 角色向下移动改变角色位置
-                map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+            map_list[i + 1][j] = PLAYER_FLAG  # 角色向下移动改变角色位置
+            self._handle_player_dest()
+
+        elif map_list[i + 1][j] == DEST_FLAG:
+            # 玩家下边是目的地
+            print('down destination')
+            map_list[i + 1][j] = PLAYER_DEST_FLAG  # 让角色和目的地重合
+
+            self._handle_player_dest()
 
     def move_lef(self):
         """
@@ -218,14 +225,21 @@ class RabbitBox(object):
         if map_list[i][j - 1] == BOX_FLAG and (map_list[i][j - 2] == EMPTY_FLAG or map_list[i][j - 2] == DEST_FLAG):
             print('left box')
             map_list[i][j - 1] = PLAYER_FLAG  # 角色向左移动改变角色位置
-            map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+            self._handle_player_dest()
             map_list[i][j - 2] = BOX_FLAG  # 把箱子向左移改变位置
 
         # 玩家左边(j - 1)是空白
         elif map_list[i][j - 1] == EMPTY_FLAG:
             print('left empty')
             map_list[i][j - 1] = PLAYER_FLAG  # 角色向左移动改变角色位置
-            map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+            self._handle_player_dest()
+
+        elif map_list[i][j - 1] == DEST_FLAG:
+            # 玩家左边是目的地
+            print('left destination')
+            map_list[i][j - 1] = PLAYER_DEST_FLAG  # 让角色和目的地重合
+
+            self._handle_player_dest()
 
     def move_right(self):
         """
@@ -241,14 +255,21 @@ class RabbitBox(object):
         if map_list[i][j + 1] == BOX_FLAG and (map_list[i][j + 2] == EMPTY_FLAG or map_list[i][j + 2] == DEST_FLAG):
             print('right box')
             map_list[i][j + 1] = PLAYER_FLAG  # 角色向左移动改变角色位置
-            map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+            self._handle_player_dest()
             map_list[i][j + 2] = BOX_FLAG  # 把箱子向左移改变位置
 
         # 玩家右边(j + 1)是空白
         elif map_list[i][j + 1] == EMPTY_FLAG:
             print('right empty')
             map_list[i][j + 1] = PLAYER_FLAG  # 角色向左移动改变角色位置
-            map_list[i][j] = EMPTY_FLAG  # 把原来角色位置改成空白
+            self._handle_player_dest()
+
+        elif map_list[i][j + 1] == DEST_FLAG:
+            # 玩家优边是目的地
+            print('right destination')
+            map_list[i][j + 1] = PLAYER_DEST_FLAG  # 让角色和目的地重合
+
+            self._handle_player_dest()
 
     def _event_handle(self):
         """事件处理"""
@@ -260,7 +281,6 @@ class RabbitBox(object):
             if key_pressed[K_a] or key_pressed[K_LEFT]:
                 # 玩家向左移动
                 self.move_lef()
-                pass
 
             elif key_pressed[K_d] or key_pressed[K_RIGHT]:
                 # 玩家向右移动
@@ -292,7 +312,7 @@ class RabbitBox(object):
 
 
 def main():
-    RabbitBox().run_game()
+    RabbitBox(2).run_game()
 
 
 if __name__ == '__main__':
