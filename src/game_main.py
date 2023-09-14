@@ -19,6 +19,7 @@ from src.game_setting import MoveDirection
 class RabbitBox(object):
     GRID_SIZE = game_setting.GRID_SIZE
     GAME_TITLE = game_setting.GAME_TITLE
+    GAME_ICON = game_setting.GAME_ICON
 
     WALLS = game_setting.WALLS
     PLAYERS = game_setting.PLAYERS
@@ -65,6 +66,7 @@ class RabbitBox(object):
 
     def _init_game(self):
         pygame.init()
+        pygame.display.set_icon(self.GAME_ICON)
         pygame.display.set_caption(self.GAME_TITLE)
 
     def setup_game_screen(self):
@@ -364,6 +366,7 @@ class RabbitBox(object):
         if not exist_dest:
             print('game pass %s' % self.game_level)
             self.game_level = self.game_level + 1
+            self.random_game_material()
 
             if self.game_level > len(GAME_MAP):
                 self.game_level = 1

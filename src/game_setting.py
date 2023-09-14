@@ -9,10 +9,12 @@ from enum import Enum
 
 import pygame
 
-GRID_SIZE = 64  # 单个方块大小
-GAME_TITLE = "🐰兔子吃着月饼🥮上月球🌕"
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+GRID_SIZE = 90  # 单个方块大小
+GAME_TITLE = "🐰兔子吃着月饼🥮上月球🌕"
+GAME_ICON = pygame.image.load(os.path.join(BASE_DIR, "res/img/rabbit.ico"))
+
 
 WALLS = [
     pygame.image.load(os.path.join(BASE_DIR, "res/img/lantern.png")),
@@ -31,13 +33,11 @@ BOXS = [
 ]
 
 TERMINAL_BOXS = [
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/moon.png")),
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/moon_01.png"))] * 3,
     pygame.image.load(os.path.join(BASE_DIR, "res/img/moon_02.png"))
 ]
 
 FINISHED_BOXS = [
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/moon.png")),
     pygame.image.load(os.path.join(BASE_DIR, "res/img/moon_01.png")),
 ]
 
@@ -48,9 +48,7 @@ BG_BOXS = [
 ]
 
 BG_SCREENS = [
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_fireworks.png")),
     pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_嫦娥_gray.png")),
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_fireworks_gray.png")),
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_girl.jpeg"))] * 3,
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_blue.png"))] * 10,
 ]
