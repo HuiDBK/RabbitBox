@@ -15,6 +15,17 @@ GRID_SIZE = 90  # 单个方块大小
 GAME_TITLE = "🐰兔子吃着月饼🥮上月球🌕"
 GAME_ICON = pygame.image.load(os.path.join(BASE_DIR, "res/img/rabbit.ico"))
 
+# 游戏背景音乐
+BG_MUSICS = [
+    os.path.join(BASE_DIR, "res/music/卡农.mp3"),
+    os.path.join(BASE_DIR, "res/music/龙珠.mp3"),
+]
+# 游戏音乐结束事件
+MUSIC_END_EVENT = pygame.USEREVENT + 6
+
+# 游戏音乐音量
+MUSIC_VOLUME = 5
+
 # 游戏墙素材
 WALLS = [
     pygame.image.load(os.path.join(BASE_DIR, "res/img/lantern.png")),

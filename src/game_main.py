@@ -5,6 +5,7 @@
 # @Date: 2023/09/13 12:20
 import sys
 import random
+import traceback
 
 import pygame
 from pygame import Surface, K_a, K_LEFT, K_d, K_RIGHT, K_w, K_UP, K_s, K_DOWN
@@ -28,6 +29,7 @@ class RabbitBox(object):
     FINISHED_BOXS = game_setting.FINISHED_BOXS
     BG_BOXS = game_setting.BG_BOXS
     BG_IMAGES = game_setting.BG_IMAGES
+    BG_MUSICS = game_setting.BG_MUSICS
 
     def __init__(self, game_level: int = 1, game_fps=60):
         """
@@ -50,12 +52,15 @@ class RabbitBox(object):
         self.finished_box: Surface = None
         self.bg_box: Surface = None
         self.bg_screen: Surface = None
+        self.bg_music = None
 
         self.random_game_material()
         self.setup_game_screen()
+        self.random_music()
 
     def random_game_material(self):
         """随机游戏素材"""
+        print("random_game_material")
         self.wall = random.choice(self.WALLS)
         self.player = random.choice(self.PLAYERS)
         self.box = random.choice(self.BOXS)
@@ -64,8 +69,25 @@ class RabbitBox(object):
         self.bg_box = random.choice(self.BG_BOXS)
         self.bg_screen = random.choice(self.BG_IMAGES)
 
+    def random_music(self):
+        """随机播放背景音乐"""
+        print("_random_music")
+        try:
+            pygame.mixer.music.load(random.choice(self.BG_MUSICS))
+            pygame.mixer.music.set_volume(game_setting.MUSIC_VOLUME)
+            pygame.mixer.music.play(loops=0)
+        except Exception as e:
+            print("无法加载音频，请检查电脑配置" + str(e))
+            print(traceback.format_exc())
+
     def _init_game(self):
         pygame.init()
+
+        # 游戏播放器初始化
+        pygame.mixer.init()
+        pygame.mixer.music.set_endevent(game_setting.MUSIC_END_EVENT)  # 注册游戏音乐结束事件
+
+        # 设置游戏标题与图标
         pygame.display.set_icon(self.GAME_ICON)
         pygame.display.set_caption(self.GAME_TITLE)
 
@@ -330,6 +352,15 @@ class RabbitBox(object):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+
+            try:
+                if pygame.mixer.music.get_endevent() == game_setting.MUSIC_END_EVENT and \
+                        not pygame.mixer.music.get_busy():
+                    # 如果music播放结束且没有音乐在播放就随机下一首
+                    print("随机下一首")
+                    self.random_music()
+            except:
+                pass
 
             key_pressed = pygame.key.get_pressed()
             if key_pressed[K_a] or key_pressed[K_LEFT]:
