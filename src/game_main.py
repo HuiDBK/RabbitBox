@@ -27,7 +27,7 @@ class RabbitBox(object):
     TERMINAL_BOXS = game_setting.TERMINAL_BOXS
     FINISHED_BOXS = game_setting.FINISHED_BOXS
     BG_BOXS = game_setting.BG_BOXS
-    BG_SCREENS = game_setting.BG_SCREENS
+    BG_IMAGES = game_setting.BG_IMAGES
 
     def __init__(self, game_level: int = 1, game_fps=60):
         """
@@ -62,7 +62,7 @@ class RabbitBox(object):
         self.terminal_box = random.choice(self.TERMINAL_BOXS)
         self.finished_box = random.choice(self.FINISHED_BOXS)
         self.bg_box = random.choice(self.BG_BOXS)
-        self.bg_screen = random.choice(self.BG_SCREENS)
+        self.bg_screen = random.choice(self.BG_IMAGES)
 
     def _init_game(self):
         pygame.init()
