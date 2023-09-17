@@ -301,7 +301,7 @@ class RabbitBox(object):
         if len(self.history_game_map_list) >= self.HISTORY_MAP_MAX_CAP:
             # 超过最大历史保存，删除最前一份地图
             print(f"HISTORY_MAP_MAX_CAP {self.HISTORY_MAP_MAX_CAP}")
-            self.history_game_map_list.pop(-1)
+            self.history_game_map_list.pop(0)
         self.history_game_map_list.append(copy.deepcopy(GAME_MAP[self.game_level]))
 
         # 记录上下左右待判断的位置
