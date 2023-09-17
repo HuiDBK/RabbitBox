@@ -61,6 +61,7 @@ class RabbitBox(object):
         self.bg_box: Surface = None
         self.bg_screen: Surface = None
         self.bg_music = None
+        self.is_pass: bool = False  # 标明是通关
 
         self.random_game_material()
         self.setup_game_screen()
@@ -412,14 +413,14 @@ class RabbitBox(object):
         """
         游戏过关判断处理
         """
-        exist_dest = False  # 标明是否存在目的地
+        self.is_pass = True
         map_list = GAME_MAP[self.game_level]
         for row in map_list:
             if DEST_FLAG in row or PLAYER_DEST_FLAG in row:
-                exist_dest = True
+                self.is_pass = False  # 还存在目的地还未通关
 
         # 不存在目的地游戏通关
-        if not exist_dest:
+        if self.is_pass:
             print('game pass %s' % self.game_level)
             self.game_level = self.game_level + 1
             self.random_game_material()
@@ -428,6 +429,8 @@ class RabbitBox(object):
             if self.game_level > len(GAME_MAP):
                 self.game_level = 1
                 print("全部游戏关卡已完成")
+
+            self.is_pass = False
 
     def run_game(self):
 

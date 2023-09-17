@@ -31,14 +31,14 @@ HISTORY_MAP_MAX_CAP = 10
 
 # 游戏墙素材
 WALLS = [
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/lantern.png")),
+    *[pygame.image.load(os.path.join(BASE_DIR, "res/img/lantern.png"))] * 5,
     pygame.image.load(os.path.join(BASE_DIR, "res/img/fireworks.png")),
     pygame.image.load(os.path.join(BASE_DIR, "res/img/fireworks_02.png")),
 ]
 
 # 游戏角色素材
 PLAYERS = [
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/rabbit.png")),
+    *[pygame.image.load(os.path.join(BASE_DIR, "res/img/rabbit.png"))] * 3,
     pygame.image.load(os.path.join(BASE_DIR, "res/img/rabbit_01.png")),
 ]
 
@@ -68,7 +68,7 @@ BG_BOXS = [
 
 # 游戏背景图
 BG_IMAGES = [
-    pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_嫦娥_gray.png")),
+    # pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_嫦娥_gray.png")),
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_girl.jpeg"))] * 2,
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_blue.png"))] * 10,
 ]
