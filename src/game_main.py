@@ -3,12 +3,13 @@
 # @Author: Hui
 # @Desc: { 游戏入口模块 }
 # @Date: 2023/09/13 12:20
+import copy
 import sys
 import random
 import traceback
 
 import pygame
-from pygame import Surface, K_a, K_LEFT, K_d, K_RIGHT, K_w, K_UP, K_s, K_DOWN
+from pygame import Surface, K_a, K_LEFT, K_d, K_RIGHT, K_w, K_UP, K_s, K_DOWN, K_q, K_b
 from src.game_map import (
     GAME_MAP, WALL_FLAG, PLAYER_FLAG, BOX_FLAG, DEST_FLAG, BG_FLAG,
     EMPTY_FLAG, PLAYER_DEST_FLAG, BOX_DEST_FLAG
@@ -18,8 +19,12 @@ from src.game_setting import MoveDirection
 
 
 class RabbitBox(object):
+    """
+    w s a d 上下左右移动
+    b 回退
+    """
     GRID_SIZE = game_setting.GRID_SIZE
-    GAME_TITLE = game_setting.GAME_TITLE
+    ANCIENT_POEMS = game_setting.ANCIENT_POEMS
     GAME_ICON = game_setting.GAME_ICON
 
     WALLS = game_setting.WALLS
@@ -31,6 +36,8 @@ class RabbitBox(object):
     BG_IMAGES = game_setting.BG_IMAGES
     BG_MUSICS = game_setting.BG_MUSICS
 
+    HISTORY_MAP_MAX_CAP = game_setting.HISTORY_MAP_MAX_CAP  # 历史地图最大保留最近10步
+
     def __init__(self, game_level: int = 1, game_fps=60):
         """
         游戏属性初始化
@@ -38,6 +45,7 @@ class RabbitBox(object):
             game_level: 游戏关卡
             game_fps: 游戏帧率
         """
+        self.game_title: str = ""
         self._init_game()
 
         self.game_screen: Surface = None
@@ -57,6 +65,7 @@ class RabbitBox(object):
         self.random_game_material()
         self.setup_game_screen()
         self.random_music()
+        self.history_game_map_list: list = [copy.deepcopy(GAME_MAP[self.game_level])]
 
     def random_game_material(self):
         """随机游戏素材"""
@@ -89,7 +98,12 @@ class RabbitBox(object):
 
         # 设置游戏标题与图标
         pygame.display.set_icon(self.GAME_ICON)
-        pygame.display.set_caption(self.GAME_TITLE)
+        self.random_game_title()
+
+    def random_game_title(self):
+        """随机古诗词title"""
+        self.game_title = random.choice(self.ANCIENT_POEMS)
+        pygame.display.set_caption(self.game_title)
 
     def setup_game_screen(self):
         """根据游戏地图配置游戏屏幕"""
@@ -283,6 +297,11 @@ class RabbitBox(object):
             direction: 移动的方向
 
         """
+        if len(self.history_game_map_list) >= self.HISTORY_MAP_MAX_CAP:
+            # 超过最大历史保存，删除最前一份地图
+            print(f"HISTORY_MAP_MAX_CAP {self.HISTORY_MAP_MAX_CAP}")
+            self.history_game_map_list.pop(-1)
+        self.history_game_map_list.append(copy.deepcopy(GAME_MAP[self.game_level]))
 
         # 记录上下左右待判断的位置
         # i,j 玩家原来位置 上下 m，k  左右 n，v
@@ -382,6 +401,12 @@ class RabbitBox(object):
                 # 玩家上下移动
                 self._player_move_event_handle(direction=MoveDirection.DOWN)
                 # self.move_down()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_b:
+                # 操作回退
+                print("back")
+                if self.history_game_map_list:
+                    back_game_map = self.history_game_map_list.pop()
+                    GAME_MAP[self.game_level] = back_game_map
 
     def _handle_game_finish(self):
         """
@@ -398,6 +423,7 @@ class RabbitBox(object):
             print('game pass %s' % self.game_level)
             self.game_level = self.game_level + 1
             self.random_game_material()
+            self.random_game_title()
 
             if self.game_level > len(GAME_MAP):
                 self.game_level = 1

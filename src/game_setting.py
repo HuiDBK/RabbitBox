@@ -26,6 +26,9 @@ MUSIC_END_EVENT = pygame.USEREVENT + 6
 # 游戏音乐音量
 MUSIC_VOLUME = 5
 
+# 历史地图最大保留最近10步
+HISTORY_MAP_MAX_CAP = 10
+
 # 游戏墙素材
 WALLS = [
     pygame.image.load(os.path.join(BASE_DIR, "res/img/lantern.png")),
@@ -68,6 +71,20 @@ BG_IMAGES = [
     pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_嫦娥_gray.png")),
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_girl.jpeg"))] * 2,
     *[pygame.image.load(os.path.join(BASE_DIR, "res/img/bg_blue.png"))] * 10,
+]
+
+# 中秋古诗词
+ANCIENT_POEMS = [
+    "❤️但愿人长久，千里共婵娟🎆",
+    "🏮今夜月明人尽望，不知秋思落谁家🏮",
+    "🌟明月几时有？ 把酒问青天🌟",
+    "🥮万里无云镜九州，最团圆夜是中秋🥮",
+    "🌕三五夜中新月色, 二千里外故人心🌕",
+    "🌕嫦娥应悔偷灵药, 碧海青天夜夜心🌕",
+    "🥮此生此夜不长好, 明月明年何处看?🥮",
+    "🌟此夜中秋月，清光十万家🌟",
+    "🏮若得长圆如此夜，人情未必看承别🏮",
+    "❤️明月易低人易散, 归来呼酒更重看🎆",
 ]
 
 
