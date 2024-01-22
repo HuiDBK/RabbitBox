@@ -7,7 +7,7 @@ from src.game_main import RabbitBox
 
 
 def main():
-    RabbitBox().run_game()
+    RabbitBox(game_level=1).run_game()
 
 
 if __name__ == '__main__':

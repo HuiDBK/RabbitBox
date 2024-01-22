@@ -66,6 +66,7 @@ class RabbitBox(object):
         self.random_game_material()
         self.setup_game_screen()
         self.random_music()
+        self.backup_game_map: dict = copy.deepcopy(GAME_MAP)
         self.history_game_map_list: list = [copy.deepcopy(GAME_MAP[self.game_level])]
 
     def random_game_material(self):
@@ -113,8 +114,8 @@ class RabbitBox(object):
         row_num = len(rows)
         col_num = len(rows[0])
 
-        width = self.GRID_SIZE * row_num
-        height = self.GRID_SIZE * col_num
+        width = self.GRID_SIZE * col_num
+        height = self.GRID_SIZE * row_num
         self.game_screen = pygame.display.set_mode(size=[width, height])
 
         # 按比例缩放背景图
@@ -408,6 +409,10 @@ class RabbitBox(object):
                 if self.history_game_map_list:
                     back_game_map = self.history_game_map_list.pop()
                     GAME_MAP[self.game_level] = back_game_map
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                # 空格重玩当前关卡
+                GAME_MAP[self.game_level] = copy.deepcopy(self.backup_game_map[self.game_level])
+
 
     def _handle_game_finish(self):
         """
